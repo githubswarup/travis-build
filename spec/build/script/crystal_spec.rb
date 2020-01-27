@@ -28,6 +28,15 @@ describe Travis::Build::Script::Crystal, :sexp do
     it { is_expected.to eq("cache-#{CACHE_SLUG_EXTRAS}-crystal") }
   end
 
+  context "when cache is configured" do
+    let(:options) { { fetch_timeout: 20, push_timeout: 30, type: 's3', s3: { bucket: 's3_bucket', secret_access_key: 's3_secret_access_key', access_key_id: 's3_access_key_id' } } }
+    let(:data)   { payload_for(:push, :crystal, config: { cache: 'shards' }, cache_options: options) }
+
+    it 'caches desired directories' do
+      should include_sexp [:cmd, %r[rvm \$\(travis_internal_ruby\) --fuzzy do \$CASHER_DIR/bin/casher --name cache-linux-[0-9a-f]+-crystal cache add \$\{TRAVIS_HOME\}/.cache/shards], timing: true]
+    end
+  end
+
   context "versions" do
     let(:with_snap) { sexp_find(subject, [:if, '-n $(command -v snap)'], [:then]) }
     let(:without_snap) { sexp_find(subject, [:if, '-n $(command -v snap)'], [:else]) }

@@ -120,6 +120,10 @@ module Travis
           sh.cmd %Q(sudo apt-get install -y #{version[:package]} libgmp-dev)
         end
 
+        def use_directory_cache?
+          super || data.cache?(:shards)
+        end
+
         def cache_dirs
           case config[:os]
           when 'linux'
